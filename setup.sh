@@ -212,13 +212,30 @@ setup_with_git() {
     fi
 
     # Clone the repository
-    echo "Cloning the repository..."
-    git clone "$git_repo" "$project_path/$project_name" &>/dev/null &
-    show_spinner $!
+    if [[ $project_path == /var/www* ]]; then
+        temp_dir=$(mktemp -d)
+        echo "Cloning the repository to a temporary directory..."
+        git clone "$git_repo" "$temp_dir/$project_name" &>/dev/null &
+        show_spinner $!
 
-    if [ $? -ne 0 ]; then
-        echo "Failed to clone the repository. Aborting."
-        exit 1
+        if [ $? -ne 0 ]; then
+            echo "Failed to clone the repository. Aborting."
+            exit 1
+        fi
+
+        echo "Moving the repository to $project_path..."
+        sudo mv "$temp_dir/$project_name" "$project_path" &>/dev/null &
+        show_spinner $!
+        rm -rf "$temp_dir"
+    else
+        echo "Cloning the repository..."
+        git clone "$git_repo" "$project_path/$project_name" &>/dev/null &
+        show_spinner $!
+
+        if [ $? -ne 0 ]; then
+            echo "Failed to clone the repository. Aborting."
+            exit 1
+        fi
     fi
 
     echo "Repository successfully cloned to $project_path/$project_name."
