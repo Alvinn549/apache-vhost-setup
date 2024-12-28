@@ -175,19 +175,20 @@ setup_with_git() {
         exit 1
     fi
 
-    # Ask for the clone path
-    echo "Enter the full path where the project should be cloned (e.g., /home/user/Projects):"
-    read project_path
-
     # Check if the project path exists
-    # Expand ~ to the full home path
-    project_path=${project_path/#\~/$HOME}
+    while true; do
+        echo "Enter the full path where the project should be cloned (e.g., /home/user/Projects or /var/www):"
+        read project_path
 
-    if [ ! -d "$project_path" ]; then
-        echo "The specified path does not exist. Creating it..."
-        mkdir -p "$project_path" &>/dev/null &
-        show_spinner $!
-    fi
+        # Expand ~ to the full home path
+        project_path=${project_path/#\~/$HOME}
+
+        if [ -d "$project_path" ]; then
+            break
+        else
+            echo "The specified path does not exist. Please enter a valid path."
+        fi
+    done
 
     # Ask for the project name
     echo "Enter the project name (no spaces allowed):"
